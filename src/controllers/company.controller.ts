@@ -1,6 +1,5 @@
 // company.controller.ts
 import { NextFunction, Request, Response } from "express";
-import { z } from "zod";
 import { createCompany, getAllCompanies, getCompanyById } from "../services/company.service";
 import { createInsertSchema } from "drizzle-zod";
 import { companyModel } from "../schemas";

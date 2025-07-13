@@ -175,3 +175,7 @@ export type Role = typeof roleModel.$inferSelect;
 export type NewRole = typeof roleModel.$inferInsert;
 export type Company = typeof companyModel.$inferSelect;
 export type NewCompany = typeof companyModel.$inferInsert;
+export type AccountMain = typeof accountMainModel.$inferSelect;
+export type NewAccountMain = typeof accountMainModel.$inferInsert;
+export type Transaction = typeof transactionModel.$inferSelect;
+export type NewTransaction = typeof transactionModel.$inferInsert;
