@@ -163,6 +163,9 @@ export const accountMainModel = mysqlTable("account_main", {
 
 export const transactionModel = mysqlTable("transactions", {
   id: int("id").primaryKey().autoincrement(),
+  accountId: int("account_main_id").notNull().references(() => accountMainModel.id, {
+    onDelete: "cascade",
+  }),
   transactionDate: timestamp("transaction_date").default(sql`CURRENT_TIMESTAMP`),
   transactionType: mysqlEnum("transaction_type", ['Deposite', 'Withdraw']).notNull(),
   details: mysqlEnum("details", ['demo']).notNull(), // this will be come from another table. needs to be changed
