@@ -7,10 +7,23 @@ import {
   getTransactionById,
   updateTransaction,
 } from "../services/transaction.service";
+import { z } from "zod";
+import { createInsertSchema } from "drizzle-zod";
+import { transactionModel } from "../schemas";
+
+const dateStringToDate = z.preprocess(
+  (arg) =>
+    typeof arg === "string" || arg instanceof Date ? new Date(arg) : undefined,
+  z.date()
+);
 
 export const createTransactionController = async (req: Request, res: Response) => {
   try {
-    const transaction = await createTransaction(req.body);
+    const transactionSchema = createInsertSchema(transactionModel, {
+      transactionDate: dateStringToDate
+    });
+    const validatedData = transactionSchema.parse(req.body);
+    const transaction = await createTransaction(validatedData);
     res.status(201).json(transaction);
   } catch (error) {
     throw error
