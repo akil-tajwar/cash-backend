@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../config/database";
-import { NewTransaction, Transaction, transactionModel } from "../schemas";
+import { accountMainModel, NewTransaction, Transaction, transactionModel } from "../schemas";
 import { BadRequestError } from "./utils/errors.utils";
 
 export const createTransaction = async (transactionData: NewTransaction) => {
@@ -33,7 +33,18 @@ export const getTransactionById = async (id: number) => {
 
 // get all transactions
 export const getAllTransactions = async () => {
-  const transactions = await db.select().from(transactionModel);
+  const transactions = await db
+    .select({
+      id: transactionModel.id,
+      bankAccountId: transactionModel.accountId,
+      transactionDate: transactionModel.transactionDate,
+      transactionType: transactionModel.transactionType,
+      details: transactionModel.details,
+      amount: transactionModel.amount,
+      accountNumber: accountMainModel.accountNo,
+    })
+    .from(transactionModel)
+    .leftJoin(accountMainModel, eq(transactionModel.accountId, accountMainModel.id));
 
   if (!transactions.length) {
     throw BadRequestError("No transactions found");
