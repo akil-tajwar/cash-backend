@@ -165,7 +165,7 @@ export const transactionModel = mysqlTable("transactions", {
   id: int("id").primaryKey().autoincrement(),
   transactionDate: timestamp("transaction_date").default(sql`CURRENT_TIMESTAMP`),
   transactionType: mysqlEnum("transaction_type", ['Deposite', 'Withdraw']).notNull(),
-  details: mysqlEnum("details", ['']).notNull(), // this will be come from another table
+  details: mysqlEnum("details", ['demo']).notNull(), // this will be come from another table. needs to be changed
   amount: int("amount").notNull(),
 });
 
