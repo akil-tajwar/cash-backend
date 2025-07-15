@@ -1,30 +1,24 @@
 
 import { Request, Response } from 'express';
-import { transactionReport } from '../services/reports.service';
+import { cashFlowLoanReport } from '../services/reports.service';
 
-export const getTransactionReportController = async (req: Request, res: Response) => {
+export const getCashFlowLoanReportController = async (req: Request, res: Response) => {
   try {
-    const { date, accountMainId } = req.query;
+    const { date } = req.query;
 
-    if (!date || !accountMainId) {
-      res.status(400).json({
-        success: false,
-        message: 'Date and account ID are required'
-      });
+    if (!date) {
+      res.status(400).json({ success: false, message: 'Date is required' });
     }
 
-    const report = await transactionReport(
-      date as string,
-      Number(accountMainId)
-    );
+    const report = await cashFlowLoanReport(date as string);
 
     res.status(200).json(report);
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error generating transaction report',
+      message: 'Error generating loan report',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
+
