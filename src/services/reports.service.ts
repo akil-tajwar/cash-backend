@@ -27,11 +27,12 @@ export const cashFlowLoanReport = async (reportDate: string) => {
         })
         .from(transactionModel)
         .where(
-          and(
-            lt(sql`DATE(${transactionModel.transactionDate})`, reportDate),
-            eq(transactionModel.id, account.id)
-          )
-        );
+  and(
+    lt(sql`DATE(${transactionModel.transactionDate})`, reportDate),
+    eq(transactionModel.accountId, account.id) // ✅ FIXED
+  )
+)
+
 
       const totalPrevious = previousTransactions.reduce((sum, tx) => sum + tx.amount, 0);
       const openingBalance = Number(account.initialBalance) + totalPrevious;
@@ -44,11 +45,12 @@ export const cashFlowLoanReport = async (reportDate: string) => {
         })
         .from(transactionModel)
         .where(
-          and(
-            eq(sql`DATE(${transactionModel.transactionDate})`, reportDate),
-            eq(transactionModel.id, account.id)
-          )
-        );
+  and(
+    eq(sql`DATE(${transactionModel.transactionDate})`, reportDate),
+    eq(transactionModel.accountId, account.id) // ✅ FIXED
+  )
+)
+
 
       const deposit = transactionsToday
         .filter(tx => tx.transactionType === 'Deposit')
