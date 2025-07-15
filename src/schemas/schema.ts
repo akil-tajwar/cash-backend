@@ -167,7 +167,7 @@ export const transactionModel = mysqlTable("transactions", {
     onDelete: "cascade",
   }),
   transactionDate: timestamp("transaction_date").default(sql`CURRENT_TIMESTAMP`),
-  transactionType: mysqlEnum("transaction_type", ['Deposite', 'Withdraw']).notNull(),
+  transactionType: mysqlEnum("transaction_type", ['Deposit', 'Withdraw']).notNull(),
   details: mysqlEnum("details", ['demo']).notNull(), // this will be come from another table. needs to be changed
   amount: int("amount").notNull(),
 });
