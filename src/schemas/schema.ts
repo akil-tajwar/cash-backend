@@ -140,6 +140,13 @@ export const userRolesRelations = relations(userRolesModel, ({ one }) => ({
   }),
 }));
 
+export const banksModel = mysqlTable("banks", {
+  id: int("id").primaryKey().autoincrement(),
+  bankName: varchar("bank_name", { length: 100 }).notNull(),
+  bankShortCode: varchar("bank_short_code", { length: 100 }).notNull(),
+});
+
+
 export const accountTypeModel = mysqlTable("account_type", {
   id: int("id").primaryKey().autoincrement(),
   type: mysqlEnum("type", ['BD','CC','EDF','TC','AER','STP','SOFR','STD','STC']).notNull(),
@@ -147,11 +154,13 @@ export const accountTypeModel = mysqlTable("account_type", {
 
 export const accountMainModel = mysqlTable("account_main", {
   id: int("id").primaryKey().autoincrement(),
-  bankName: varchar("bank_name", { length: 100 }).notNull(),
+  bankId: int("bank_id").references(() => banksModel.id, {
+    onDelete: "cascade",
+  }).notNull(),
   accountType: int("account_type").references(() => accountTypeModel.id, {
     onDelete: "cascade",
   }).notNull(),
-  accountNo: int("account_no").notNull(),
+  accountNo: varchar("account_no", { length: 100 }).notNull(),
   limit: int("limit"),
   interestRate: decimal("interest_rate", { precision: 5, scale: 2 }),
   balance: decimal("balance", { precision: 15, scale: 2 }).notNull().default('0.00'),
@@ -178,6 +187,7 @@ export type Role = typeof roleModel.$inferSelect;
 export type NewRole = typeof roleModel.$inferInsert;
 export type Company = typeof companyModel.$inferSelect;
 export type NewCompany = typeof companyModel.$inferInsert;
+export type Banks = typeof banksModel.$inferSelect;
 export type AccountMain = typeof accountMainModel.$inferSelect;
 export type NewAccountMain = typeof accountMainModel.$inferInsert;
 export type Transaction = typeof transactionModel.$inferSelect;
