@@ -1,6 +1,7 @@
 import { and, eq, lt, lte, sql } from "drizzle-orm";
 import { db } from "../config/database";
-import { accountMainModel, companyModel, transactionModel } from "../schemas";
+import { accountMainModel, banksModel, companyModel, transactionModel } from "../schemas";
+import { BadRequestError } from "./utils/errors.utils";
 
 export const cashFlowLoanReport = async (reportDate: string) => {
   const accounts = await db
@@ -10,13 +11,16 @@ export const cashFlowLoanReport = async (reportDate: string) => {
       limit: accountMainModel.limit,
       interestRate: accountMainModel.interestRate,
       accountType: accountMainModel.accountType,
-      bank: accountMainModel.bankName,
+      bankId: accountMainModel.bankId,
+      bankName: banksModel.bankName,
       initialBalance: accountMainModel.balance,
       companyId: accountMainModel.companyId,
       companyName: companyModel.companyName
     })
     .from(accountMainModel)
-    .leftJoin(companyModel, eq(accountMainModel.companyId, companyModel.companyId));
+    .leftJoin(companyModel, eq(accountMainModel.companyId, companyModel.companyId))
+    .leftJoin(banksModel, eq(accountMainModel.bankId, banksModel.id));
+
 
   const reportData = await Promise.all(
     accounts.map(async (account) => {
@@ -69,7 +73,8 @@ export const cashFlowLoanReport = async (reportDate: string) => {
         limit: account.limit,
         typeId: account.accountType,
         interestRate: account.interestRate,
-        bank: account.bank,
+        bankId: account.bankId,
+        bankName: account.bankName,
         openingBalance,
         deposit,
         withdrawal,
@@ -91,6 +96,28 @@ export const cashFlowLoanReport = async (reportDate: string) => {
   return groupedByCompany;
 };
 
+export const getCashFlowSummaryReport = async (reportDate: string) => {
+  const transactions = await db
+    .select({
+      id: transactionModel.id,
+      bankAccountId: transactionModel.accountId,
+      transactionType: transactionModel.transactionType,
+      details: transactionModel.details,
+      amount: transactionModel.amount,
+      accountNumber: accountMainModel.accountNo,
+    })
+    .from(transactionModel)
+    .leftJoin(accountMainModel, eq(transactionModel.accountId, accountMainModel.id))
+    .where(
+  sql`DATE(${transactionModel.transactionDate}) = DATE(${sql.raw(`'${reportDate}'`)})`
+)
 
+
+  if (!transactions.length) {
+    throw BadRequestError("No transactions found for the given date");
+  }
+
+  return transactions;
+};
 
 

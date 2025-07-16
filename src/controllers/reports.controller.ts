@@ -1,6 +1,7 @@
 
 import { Request, Response } from 'express';
-import { cashFlowLoanReport } from '../services/reports.service';
+import { cashFlowLoanReport, getCashFlowSummaryReport } from '../services/reports.service';
+import { BadRequestError } from '../services/utils/errors.utils';
 
 export const getCashFlowLoanReportController = async (req: Request, res: Response) => {
   try {
@@ -22,3 +23,20 @@ export const getCashFlowLoanReportController = async (req: Request, res: Respons
   }
 };
 
+export const getCashFlowSummaryReportController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { reportDate } = req.params;
+
+    if (!reportDate) {
+      throw BadRequestError("reportDate parameter is required");
+    }
+
+    const transactions = await getCashFlowSummaryReport(reportDate);
+    res.status(200).json(transactions);
+  } catch (error) {
+    res.status(400).json({ message: "Failed to fetch transactions report" });
+  }
+};
