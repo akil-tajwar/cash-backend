@@ -149,7 +149,8 @@ export const banksModel = mysqlTable("banks", {
 
 export const accountTypeModel = mysqlTable("account_type", {
   id: int("id").primaryKey().autoincrement(),
-  type: mysqlEnum("type", ['BD','CC','EDF','TC','AER','STP','SOFR','STD','STC']).notNull(),
+  type: varchar("type",{length:15}),
+  description:varchar("description",{length:40})
 });
 
 export const accountMainModel = mysqlTable("account_main", {
@@ -170,6 +171,29 @@ export const accountMainModel = mysqlTable("account_main", {
   }).notNull(),
 });
 
+enum CashFlowActivities {
+  SALES_PROCEED_RECEIVED = "Sales Proceed Received",
+  OTHER_RECEIPTS = "Other Receipts",
+  ACCOUNT_TO_ACCOUNT_TRANSFER = "A/C to A/C Transfer",
+  PARTY_AND_OTHER_PAYMENTS = "Party & Other Payments",
+  DHAKA_REMITTANCE = "Dhaka Remittance",
+  VAT_PAYMENT = "VAT Payment",
+  AUCTION_PAYMENT = "Auction Payment",
+  LIBOR_CREATION = "LIBOR Creation",
+  LC_RETIREMENT_COST = "L/C Retirement Cost",
+  OTHER_PAYMENTS = "Other Payments",
+  ACCOUNT_TO_ACCOUNT_TRANSFER_OUT = "A/C to A/C  Transfer",
+  LATR_CREATED = "LATR Created",
+  AB_SECURITIES = "A.B. Securities",
+  CUSTOM_DUTY = "Custom Duty",
+  ISPI_SECURITIES = "ISPI Securities",
+  QUARTERLY_BANK_INTEREST = "Quarterly Bank Interest",
+  REVOLVING_LOAN = "Revolving Loan",
+  LEASING_LOAN = "Leasing Loan",
+  EDF_LOAN_PAYMENT = "EDF Loan Payment",
+  SOFR_CREATION = "SOFR Creation"
+}
+const cashFlowTags = Object.values(CashFlowActivities) as [string, ...string[]];
 export const transactionModel = mysqlTable("transactions", {
   id: int("id").primaryKey().autoincrement(),
   accountId: int("account_main_id").notNull().references(() => accountMainModel.id, {
@@ -177,7 +201,7 @@ export const transactionModel = mysqlTable("transactions", {
   }),
   transactionDate: timestamp("transaction_date").default(sql`CURRENT_TIMESTAMP`),
   transactionType: mysqlEnum("transaction_type", ['Deposit', 'Withdraw']).notNull(),
-  details: mysqlEnum("details", ['demo']).notNull(), // this will be come from another table. needs to be changed
+  details: mysqlEnum("details", cashFlowTags).notNull(), // this will be come from another table. needs to be changed
   amount: int("amount").notNull(),
 });
 
