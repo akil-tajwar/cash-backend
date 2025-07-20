@@ -1,6 +1,6 @@
 
 import { NextFunction, Request, Response } from 'express';
-import { cashFlowLoanReport, getBalanceSummaryByint, getBalanceSummaryByType, getCashFlowSummaryReport } from '../services/reports.service';
+import { cashFlowLoanReport, getBalanceSummaryByint, getBalanceSummaryByType, getCashFlowSummaryReport, getUtilizationSummaryBybank, getUtilizationSummaryBybankType } from '../services/reports.service';
 import { BadRequestError } from '../services/utils/errors.utils';
 import e from 'cors';
 
@@ -82,6 +82,50 @@ export const getInterestRateFlatReportController = async (
 
     const parsedDate = new Date(reportDate);
     const transactions = await getBalanceSummaryByint(new Date(reportDate));
+    res.status(200).json(transactions);
+  } catch (error) {
+    next(error)
+  }
+};
+export const getBankUtilizationReportController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { reportDate } = req.query;
+    console.log(req.query)
+  if (
+  typeof reportDate !== 'string' ||
+  isNaN(new Date(reportDate).getTime())
+) {
+  throw new Error("Invalid or missing reportDate");
+}
+
+    const parsedDate = new Date(reportDate);
+    const transactions = await getUtilizationSummaryBybank(new Date(reportDate));
+    res.status(200).json(transactions);
+  } catch (error) {
+    next(error)
+  }
+};
+export const getBankTypeUtilizationReportController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { reportDate } = req.query;
+    console.log(req.query)
+  if (
+  typeof reportDate !== 'string' ||
+  isNaN(new Date(reportDate).getTime())
+) {
+  throw new Error("Invalid or missing reportDate");
+}
+
+    const parsedDate = new Date(reportDate);
+    const transactions = await getUtilizationSummaryBybankType(new Date(reportDate));
     res.status(200).json(transactions);
   } catch (error) {
     next(error)

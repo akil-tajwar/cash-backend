@@ -243,3 +243,92 @@ export const getBalanceSummaryByint = async (asOfDate: Date) => {
   }));
 };
 
+export const getUtilizationSummaryBybank = async (asOfDate: Date) => {
+  // Subquery to get net transactionModel per account before the date
+  const netTx  = db
+    .select({
+      accountId: transactionModel.accountId,
+      netChange: sql<number>`SUM(
+        CASE 
+          WHEN ${transactionModel.transactionType} = 'Deposit' THEN ${transactionModel.amount}
+          WHEN ${transactionModel.transactionType} = 'Withdraw' THEN -${transactionModel.amount}
+          ELSE 0
+        END
+      )`.as("netChange")
+    })
+    .from(transactionModel)
+    .where(lte(transactionModel.transactionDate, asOfDate))
+    .groupBy(transactionModel.accountId)
+    .as("netTx")
+   // const netTx = alias(netTxRaw, "netTx");
+
+  // Join accounts + account_type + transactionModel subquery
+  const result = await db
+    .select({
+    
+      bankName: banksModel.bankName,
+      limit:sql<number>`SUM(${accountMainModel.limit})`,
+      balanceOnDate: sql<number>`SUM(${accountMainModel.balance} - 
+      IFNULL(${netTx.netChange}, 0))`.as("balanceOnDate"),
+    })
+    .from(accountMainModel)
+    .innerJoin(banksModel, eq(accountMainModel.bankId, banksModel.id))
+    .leftJoin(netTx, eq(accountMainModel.id, netTx.accountId))
+    .groupBy( banksModel.bankName);
+   
+  // Calculate total balance from grouped result
+
+
+  // Add percentage field
+  return result.map(row => ({
+    ...row,
+    utilizePercent: row.limit > 0 ? 
+    Number(((Number(row.balanceOnDate) / row.limit) * 100).toFixed(2)) : 0,
+  }));
+};
+export const getUtilizationSummaryBybankType = async (asOfDate: Date) => {
+  // Subquery to get net transactionModel per account before the date
+  const netTx  = db
+    .select({
+      accountId: transactionModel.accountId,
+      netChange: sql<number>`SUM(
+        CASE 
+          WHEN ${transactionModel.transactionType} = 'Deposit' THEN ${transactionModel.amount}
+          WHEN ${transactionModel.transactionType} = 'Withdraw' THEN -${transactionModel.amount}
+          ELSE 0
+        END
+      )`.as("netChange")
+    })
+    .from(transactionModel)
+    .where(lte(transactionModel.transactionDate, asOfDate))
+    .groupBy(transactionModel.accountId)
+    .as("netTx")
+   // const netTx = alias(netTxRaw, "netTx");
+
+  // Join accounts + account_type + transactionModel subquery
+  const result = await db
+    .select({
+    
+      bankName: banksModel.bankName,
+      accountType:accountTypeModel.description,
+      limit:sql<number>`SUM(${accountMainModel.limit})`,
+      balanceOnDate: sql<number>`SUM(${accountMainModel.balance} - 
+      IFNULL(${netTx.netChange}, 0))`.as("balanceOnDate"),
+    })
+    .from(accountMainModel)
+    .innerJoin(banksModel, eq(accountMainModel.bankId, banksModel.id))
+    .innerJoin(accountTypeModel,eq(accountMainModel.accountType,accountTypeModel.id))
+    .leftJoin(netTx, eq(accountMainModel.id, netTx.accountId))
+    .groupBy( banksModel.bankName,accountTypeModel.description);
+   
+  // Calculate total balance from grouped result
+
+
+  // Add percentage field
+  return result.map(row => ({
+    ...row,
+    utilizePercent: row.limit > 0 ? 
+    Number(((Number(row.balanceOnDate) / row.limit) * 100).toFixed(2)) : 0,
+  }));
+};
+
