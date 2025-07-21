@@ -2,7 +2,6 @@ import { and, between, eq, lt, lte, sql } from "drizzle-orm";
 import { db } from "../config/database";
 import { accountMainModel, accountTypeModel, banksModel, companyModel, transactionModel } from "../schemas";
 import { BadRequestError } from "./utils/errors.utils";
-import { alias } from "drizzle-orm/gel-core";
 
 export const cashFlowLoanReport = async (reportDate: string) => {
   const accounts = await db
@@ -11,7 +10,8 @@ export const cashFlowLoanReport = async (reportDate: string) => {
       accountNo: accountMainModel.accountNo,
       limit: accountMainModel.limit,
       interestRate: accountMainModel.interestRate,
-      accountTypeModel: accountMainModel.accountType,
+      typeId: accountMainModel.accountType,
+      type: accountTypeModel.type,
       bankId: accountMainModel.bankId,
       bank: banksModel.bankName,
       initialBalance: accountMainModel.balance,
@@ -20,7 +20,8 @@ export const cashFlowLoanReport = async (reportDate: string) => {
     })
     .from(accountMainModel)
     .leftJoin(companyModel, eq(accountMainModel.companyId, companyModel.companyId))
-    .leftJoin(banksModel, eq(accountMainModel.bankId, banksModel.id));
+    .leftJoin(banksModel, eq(accountMainModel.bankId, banksModel.id))
+    .leftJoin(accountTypeModel, eq(accountMainModel.accountType, accountTypeModel.id));
 
 
   const reportData = await Promise.all(
@@ -72,7 +73,8 @@ export const cashFlowLoanReport = async (reportDate: string) => {
         companyName: account.companyName,
         accountNo: account.accountNo,
         limit: account.limit,
-        typeId: account.accountTypeModel,
+        typeId: account.typeId,
+        type: account.type,
         interestRate: account.interestRate,
         bankId: account.bankId,
         bank: account.bank,
