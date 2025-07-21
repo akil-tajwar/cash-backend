@@ -75,7 +75,7 @@ export const cashFlowLoanReport = async (reportDate: string) => {
         typeId: account.accountTypeModel,
         interestRate: account.interestRate,
         bankId: account.bankId,
-        bankName: account.bank,
+        bank: account.bank,
         openingBalance,
         deposit,
         withdrawal,
