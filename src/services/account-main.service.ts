@@ -1,6 +1,6 @@
   import { eq } from "drizzle-orm";
   import { db } from "../config/database";
-  import { AccountMain, accountMainModel, banksModel, companyModel } from "../schemas";
+  import { AccountMain, accountMainModel, accountTypeModel, banksModel, companyModel } from "../schemas";
   import { BadRequestError } from "./utils/errors.utils";
 
   export const createAccountMain = async (
@@ -40,7 +40,7 @@
         id: accountMainModel.id,
         bankId: accountMainModel.bankId,
         bankName: banksModel.bankName,
-        accountType: accountMainModel.accountType,
+        accountType: accountTypeModel.type,
         accountNo: accountMainModel.accountNo,
         limit: accountMainModel.limit,
         interestRate: accountMainModel.interestRate,
@@ -51,7 +51,8 @@
       })
       .from(accountMainModel)
       .leftJoin(companyModel, eq(accountMainModel.companyId, companyModel.companyId))
-      .leftJoin(banksModel, eq(accountMainModel.bankId, banksModel.id));
+      .leftJoin(banksModel, eq(accountMainModel.bankId, banksModel.id))
+      .leftJoin(accountTypeModel, eq(accountMainModel.accountType, accountTypeModel.id));
 
     if (!accountMains.length) {
       throw BadRequestError("No account mains found");
